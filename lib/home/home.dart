@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:open_ai/constant/constant.dart';
 import 'package:open_ai/statemanagement/get.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -24,21 +25,29 @@ class MyHomePage extends GetView<ChatServicesController> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Obx(
-              () => Visibility(
-                  visible: controller.isLoading.value,
-                  child: const Center(child: CircularProgressIndicator())),
+              () => Expanded(
+                child: ListView.builder(
+                  itemCount: controller.kMessageList.length,
+                  controller: controller.scrollController,
+                  itemBuilder: (context, index) {
+                    final ChatMessage message = controller.kMessageList[index];
+                    print("message : ${message.kText}");
+                    return MessageWidget(
+                        kText: message.kText,
+                        kChatMessageType: message.kChatMessageType);
+                  },
+                ),
+              ),
             ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: controller.kMessageList.length,
-                controller: controller.scrollController,
-                itemBuilder: (context, index) {
-                  final message = controller.kMessageList[index];
-                  print("message : $message");
-                  return MessageWidget(
-                      kText: message.kText,
-                      kChatMessageType: message.kChatMessageType);
-                },
+            Obx(
+              () => Visibility(
+                visible: controller.isLoading.value,
+                child: Lottie.network(
+                  'https://lottie.host/7dec1f54-c7fb-4ad7-9f3d-3f85fd5338c1/uHZkMe0sMJ.json',
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.fill,
+                ),
               ),
             ),
             const TextFormFieldBlr()
@@ -84,18 +93,18 @@ class TextFormFieldBlr extends GetView<ChatServicesController> {
                     kText: controller.messageController.text,
                     kChatMessageType: ChatMessageType.user));
 
-                // var input = controller.messageController.text;
-                // controller.messageController.clear();
-                // Future.delayed(const Duration(milliseconds: 50))
-                //     .then((value) => controller.kScrollDown());
-                // controller.generateResponse(input).then((value) {
-                //   controller.isLoading.value = false;
-                //   controller.kMessageList.add(ChatMessage(
-                //       kText: value!, kChatMessageType: ChatMessageType.bot));
-                // });
-                // controller.messageController.clear();
-                // Future.delayed(const Duration(milliseconds: 50))
-                //     .then((value) => controller.kScrollDown());
+                var input = controller.messageController.text;
+                controller.messageController.clear();
+                Future.delayed(const Duration(milliseconds: 50))
+                    .then((value) => controller.kScrollDown());
+                controller.generateResponse(input, context).then((value) {
+                  controller.isLoading.value = false;
+                  controller.kMessageList.add(ChatMessage(
+                      kText: value!, kChatMessageType: ChatMessageType.bot));
+                });
+                controller.messageController.clear();
+                Future.delayed(const Duration(milliseconds: 50))
+                    .then((value) => controller.kScrollDown());
               },
               icon: const Icon(Icons.send))
         ],

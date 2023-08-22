@@ -4,14 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:open_ai/constant/constant.dart';
 import 'package:http/http.dart' as http;
+import 'package:velocity_x/velocity_x.dart';
 
 class ChatServicesController extends GetxController {
   final scrollController = ScrollController();
-  final List<ChatMessage> kMessageList = [];
+  final RxList kMessageList = [].obs;
   TextEditingController messageController = TextEditingController();
   Rx<bool> isLoading = false.obs;
 
-  Future<String?> generateResponse(String prompt) async {
+  Future<String?> generateResponse(String prompt, BuildContext context) async {
+    //
     final uri = Uri.parse("https://api.openai.com/v1/completions");
     final header = {
       'Content-Type': 'application/json',
@@ -35,10 +37,38 @@ class ChatServicesController extends GetxController {
         final newresponse = jsonDecode(response.body);
         final String result = newresponse['choices'][0]['text'];
         return result.trim();
+      } else if (response.statusCode == 429) {
+        print("**** CODE IS HERE");
+        showModalBottomSheet(
+            backgroundColor: Colors.transparent,
+            context: context,
+            builder: (context) => Container(
+                  decoration: const BoxDecoration(
+                      color: kBotBackgroundColor,
+                      borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(kBorderRadius),
+                          topLeft: Radius.circular(kBorderRadius))),
+                  height: 200,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        const Text(
+                          "The developer exceeded the current quota.",
+                          style: TextStyle(color: kWhite, fontSize: 20),
+                          textAlign: TextAlign.center,
+                        ),
+                        ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("Ok"))
+                      ],
+                    ),
+                  ),
+                ));
       }
-    } catch (e) {
-      print("e: ${e.toString()}");
-    }
+    } catch (_) {}
 
     return null;
   }

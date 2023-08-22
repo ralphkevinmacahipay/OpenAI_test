@@ -39,6 +39,7 @@ dependencies:
   http: ^1.1.0
   get: ^4.6.5
   velocity_x: ^4.1.1
+  lottie: ^2.6.0
 
 dev_dependencies:
   flutter_test:
