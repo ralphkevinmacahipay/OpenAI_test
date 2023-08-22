@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-const String apiKey = "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";
+const String apiKey = "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";
 
 const Color kUserbackgroundColor = Color(0xff343541);
 const Color kBotBackgroundColor = Color(0xff444654);
